@@ -7,96 +7,113 @@ Scopul proiectului a fost realizarea unei placi compacte care sa poata fi integr
 # Diagrama bloc
 
 ```text
-                                +----------------------+
-                                |       USB-C          |
-                                |   alimentare / USB   |
-                                +----------+-----------+
-                                           |
-                                           v
-                                +----------------------+
-                                |   ESD Protection     |
-                                |    USBLC6-2SC6Y      |
-                                +----------+-----------+
-                                           |
-                                           v
-                                +----------------------+
-                                |  Li-Po Charger       |
-                                |    BQ25180YBGR       |
-                                +----+------------+----+
-                                     |            |
-                                     |            +--------------------+
-                                     |                                 |
-                                     v                                 v
-                           +-------------------+             +-------------------+
-                           |    Li-Po Battery  |             |   Fuel Gauge      |
-                           |     LP502030      |<-- I2C ---> |    MAX17048       |
-                           +---------+---------+             +-------------------+
-                                     |
-                                     v
-                           +-------------------+
-                           |  Buck-Boost DC/DC |
-                           |    RT6160AWSC     |
-                           +---------+---------+
-                                     |
-                                   3V3 / VREG
-                                     |
-        +----------------------------+------------------------------+
-        |                            |                              |
-        v                            v                              v
-+---------------+          +-------------------+          +-------------------+
-|   nRF52840    |<--I2C--->|      BMA421       |<--I2C--->|     DRV2605       |
-| BLE MCU       |          |       IMU         |          |   Haptic Driver   |
-+-------+-------+          +-------------------+          +---------+---------+
-        |                                                              |
-        | SPI + GPIO                                                    v
-        v                                                      +----------------+
-+-------------------+                                          | Vibration Motor |
-| 1.54" E-Paper     |                                          |     shaker      |
-| via FPC connector |                                          +----------------+
-+-------------------+
-        |
-        +--> etaj dedicat pentru EPD:
-             MOSFET-uri + diode Schottky + inductoare + condensatori
++-------------+      +----------------+      +------------------+
+| USB-C       |----->| ESD Protection |----->| BQ25180 Charger  |
++-------------+      +----------------+      +--------+---------+
+                                                        |
+                                                        v
+                                                +---------------+
+                                                | Li-Po Battery |
+                                                +---+-------+---+
+                                                    |       |
+                                                    |       v
+                                                    |   +-----------+
+                                                    |   | MAX17048  |
+                                                    |   | FuelGauge |
+                                                    |   +-----------+
+                                                    v
+                                              +-------------+
+                                              | RT6160 DC/DC|
+                                              +------+------+ 
+                                                     |
+                                                     v
+                                              +-------------+
+                                              | nRF52840    |
+                                              | BLE MCU     |
+                                              +------+------+-------------------+
+                                                     |      |         |         |
+                                                     |      |         |         |
+                                                     v      v         v         v
+                                              +--------+ +------+ +-------+ +--------+
+                                              | E-Paper| | IMU  | |Haptic | | Buttons|
+                                              +--------+ +------+ +---+---+ +--------+
+                                                                        |
+                                                                        v
+                                                                   +---------+
+                                                                   | Shaker  |
+                                                                   +---------+
+
 
 ```
 
 ## Bill of Materials (BOM)
 
-| Componenta | Part number / valoare | Rol | Observatii |
-| ---------- | --------------------- | --- | ---------- |
-| MCU | NRF52840_QF | microcontroller principal | BLE + control general |
-| Charger | BQ25180YBGR | incarcarea bateriei Li-Po | conectat la VBUS |
-| DC/DC | RT6160AWSC | conversie VBAT -> 3V3 / VREG | alimentare sistem |
-| Fuel Gauge | MAX17048G+T10 | monitorizare baterie | interfata I2C |
-| IMU | BMA421 | accelerometru | interfata I2C |
-| Haptic Driver | DRV2605YZFR | comanda vibratie | interfata I2C |
-| USB ESD | USBLC6-2SC6Y | protectie ESD pentru USB | pe liniile USB |
-| Antena | 2450AT18B100E | antena 2.4 GHz | BLE |
-| USB-C | KH-TYPE-C-16P | alimentare / USB | conector exterior |
-| SWD | TC2030-IDC | programare / debugging | Tag-Connect |
-| Conector display | 503480-2400 | conector FPC pentru display | 24 pini |
-| Cristal HF | 32MHz | clock principal | pentru nRF52840 |
-| Cristal LF | 32.768kHz | RTC / low-power clock | pentru moduri low-power |
-| Q1 | DMG2305UX-7 | MOSFET in etajul EPD | drive display |
-| Q3 | SI1308EDL-T1-GE3 | MOSFET in etajul EPD | drive display |
-| D2 / D4 / D5 | MBR0530 | diode Schottky | etaj EPD |
-| L5 | 68uH | inductor pentru etajul EPD | boost display |
-| L7 | FTC252012SR47MBCA | inductor pentru RT6160 | 0.47uH |
-| Baterie | LP502030 | sursa principala | conectata la test pads |
-| Display | 1.54" e-paper | afisaj principal | prin FPC |
-| Butoane | EVP-AKE31A | input utilizator | 3 bucati |
+| Component | Value / Part Number | Package | Qty | Description | Datasheet |
+| --------- | ------------------- | ------- | --- | ----------- | --------- |
+| MCU | NRF52840_QF | NORDIC_NRF_4_AQFN50P700X700X85_HS-74N | 1 | Main BLE microcontroller | [Datasheet](https://infocenter.nordicsemi.com/pdf/nRF52840_PS_v1.1.pdf) |
+| PMIC charger | BQ25180YBGR | BQ25180YBGR_BGA8C40P2X4_100X155X50 | 1 | Li-Po charger | [Datasheet](https://www.ti.com/lit/ds/symlink/bq25180.pdf) |
+| DC/DC | RT6160AWSC | RT6160AWSC_BGA15C40P3X5_140X230X60 | 1 | Buck-boost DC/DC converter | [Datasheet](https://www.richtek.com/assets/product_file/RT6160A/DS6160A-05.pdf) |
+| Fuel gauge | MAX17048G+T10 | ESP32_C6_LIBRARY_SON50P200X200X80-9N | 1 | Battery fuel gauge | [Datasheet](https://www.analog.com/media/en/technical-documentation/data-sheets/max17048-max17049.pdf) |
+| IMU | BMA421 | BMA423_BMA423 | 1 | Triaxial accelerometer | [Datasheet](https://www.bosch-sensortec.com/products/motion-sensors/accelerometers/bma421/) |
+| Haptic driver | DRV2605YZFR | DRV2605YZFR_BGA9C50P3X3_144X144X62 | 1 | Haptic driver for vibration motor | [Datasheet](https://www.ti.com/lit/ds/symlink/drv2605.pdf) |
+| USB ESD | USBLC6-2SC6Y | ESP32_C6_LIBRARY_3_SOT95P280X145-6N | 1 | USB ESD protection | [Datasheet](https://www.st.com/resource/en/datasheet/usblc6-2.pdf) |
+| Antenna | 2450AT18B100E | 2450AT18B100E_ANTC3216X140N | 1 | 2.4 GHz chip antenna | [Datasheet](https://www.johansontechnology.com/datasheets/antennas/2450AT18B100.pdf) |
+| Display connector | 503480-2400 | 503480-2400_5034802400 | 1 | FPC connector for e-paper display | [Datasheet](https://www.molex.com/en-us/products/part-detail/5034802400) |
+| USB-C | KH-TYPE-C-16P | KH-TYPE-C-16P_KINGHELM_KH-TYPE-C-16P | 1 | USB-C connector | - |
+| Debug connector | TC2030-IDC | TC2030-IDC_TC2030IDC | 1 | SWD programming / debug connector | [Datasheet](https://www.tag-connect.com/product/tc2030-idc) |
+| EPD MOSFET | SI1308EDL-T1-GE3 | ESP32_C6_LIBRARY_6_SOT65P210X110-3N | 1 | MOSFET used in e-paper drive stage | [Datasheet](https://www.vishay.com/docs/68986/si1308edl.pdf) |
+| EPD MOSFET | DMG2305UX-7 | ESP32_C6_LIBRARY_4_ESP32_WROVER_SPARKFUN-DISCRETESEMI_MOSFET | 1 | MOSFET used in e-paper drive stage | [Datasheet](https://www.diodes.com/assets/Datasheets/DMG2305UX.pdf) |
+| Schottky diode | MBR0530 | ESP32_C6_LIBRARY_5_SOD3716X135N | 3 | Schottky diode used in EPD boost stage | [Datasheet](https://www.onsemi.com/pdf/datasheet/mbr0530t1-d.pdf) |
+| Power inductor | FTC252012SR47MBCA | MLP2016SR47MT0S1_INDC2016X100N | 1 | Inductor for RT6160 converter | [JLC Part](https://jlcpcb.com/partdetail/6763488-FTC252012SR47MBCA/C5832368) |
+| EPD inductor | 68uH | ESP32_C6_LIBRARY_2_IND_4828-WE-TPC_WRE | 1 | Inductor for e-paper boost stage | - |
+| RF inductor | 3.9nH | NORDIC_NRF_2_RESC0402_L | 1 | RF matching network | - |
+| RF inductor | 15nH | NORDIC_NRF_2_RESC0402_L | 1 | RF filter / matching | - |
+| Power inductor | 10uH | NORDIC_NRF_2_RESC0402_L | 1 | Power stage passive | - |
+| HF crystal | 32MHz | NORDIC_NRF_BT-XTAL_2016_N | 1 | Main MCU clock | - |
+| LF crystal | 32.768kHz | NORDIC_NRF_1_XTAL_3215_N | 1 | RTC / low-power clock | - |
+| Buttons | EVP-AKE31A | 2025-10-22_07-23-44_LIBRARY_SW_EVP-AKE31A_PAN | 3 | Tactile user buttons | - |
+| Solder jumper | SJ | ESP32_C6_LIBRARY_7_JUMPER_SJ | 1 | Configuration jumper | - |
+| Test pads | HECTOR_WATCH_1_TPTP20R | HECTOR_WATCH_1_TP20R | 14 | Test points for debug / power / signals | - |
 
-Descriere hardware
+BOM-ul complet generat automat se gaseste in folderul Manufacturing.
+
+## Pinii folositi de nRF52840
+
+| Pin nRF52840 | Semnal | Componenta / destinatie | Rol |
+| ------------ | ------ | ----------------------- | --- |
+| P0.00 / XL1 | XL1 | Cristal 32.768kHz | clock low-power / RTC |
+| P0.01 / XL2 | XL2 | Cristal 32.768kHz | clock low-power / RTC |
+| P0.02 | SCK | Display e-paper | SPI clock pentru display |
+| P0.03 | MOSI | Display e-paper | SPI data pentru display |
+| P0.05 | EPD_CS | Display e-paper | chip select pentru display |
+| P0.06 | SDA | BMA421 / DRV2605 / MAX17048 / BQ25180 / RT6160 | magistrala I2C comuna |
+| P0.07 | SCL | BMA421 / DRV2605 / MAX17048 / BQ25180 / RT6160 | magistrala I2C comuna |
+| P0.08 | IMU_INT1 | BMA421 | interrupt de la IMU |
+| P0.10 | ALERT | MAX17048 | alerta fuel gauge |
+| P0.11 | PMIC_INT | BQ25180YBGR | interrupt de la charger |
+| P0.12 | HAPTIC_EN | DRV2605YZFR | enable pentru driverul haptic |
+| P0.13 | SW_UP | Buton UP | input utilizator |
+| P0.14 | SW_ENT | Buton ENTER | input utilizator |
+| P0.15 | EPD_DC | Display e-paper | selectare data / command |
+| P0.16 | EPD_RST | Display e-paper | reset display |
+| P0.17 | EPD_BUSY | Display e-paper | busy status de la display |
+| P0.18 / RESET | RESET | Sistem | reset hardware |
+| P1.00 | SWO | Debug | trace output |
+| P1.02 | SW_DN | Buton DOWN | input utilizator |
+| P1.08 | IMU_INT2 | BMA421 | al doilea interrupt de la IMU |
+| SWDIO | SWDIO | TC2030-IDC | programare / debug |
+| SWDCLK | SWDCLK | TC2030-IDC | programare / debug |
+| ANT | RF | Antena 2.4 GHz | transmisie BLE |
+| VBUS | VBUS | USB-C | alimentare 5V |
+
+Pinii au fost alesi astfel incat sa existe o separare clara intre magistralele de comunicatie si semnalele de control. Display-ul e-paper foloseste SPI pentru transferul de date, iar semnalele EPD_CS, EPD_DC, EPD_RST si EPD_BUSY sunt tinute separat pentru controlul corect al panoului. IMU-ul, fuel gauge-ul, charger-ul, convertorul DC/DC si driverul haptic folosesc aceeasi magistrala I2C, ceea ce reduce numarul de pini ocupati. Butoanele sunt conectate pe GPIO-uri dedicate pentru citire simpla, iar liniile SWDIO, SWDCLK si SWO sunt folosite pentru programare si debugging.
+
+## Descriere hardware
 1. Microcontroller
 
 Microcontroller-ul principal al proiectului este nRF52840 (U1). Acesta este componenta centrala a sistemului si se ocupa de:
 
-comunicatia BLE
-controlul display-ului e-paper
-comunicatia cu senzorii si circuitele de power prin I2C
-citirea butoanelor
-controlul driverului haptic
-interfata de debug SWD
+comunicatia BLE, controlul display-ului e-paper, comunicatia cu senzorii si circuitele de power prin I2C, citirea butoanelor, controlul driverului haptic, interfata de debug SWD
 
 Pentru clock sunt folosite doua cristale:
 
@@ -125,8 +142,7 @@ IC9 = RT6160AWSC este convertorul buck-boost care genereaza alimentarea stabila 
 
 Bateria folosita este de tip LP502030, 3.7V, aproximativ 250mAh. In proiect, bateria nu este conectata prin conector JST, ci direct la doua test pad-uri:
 
-TP_VBAT
-TP_BAT_GND
+TP_VBAT, TP_BAT_GND
 
 Aceasta solutie a fost aleasa pentru economie de spatiu, conform cerintei proiectului.
 
@@ -134,19 +150,11 @@ Aceasta solutie a fost aleasa pentru economie de spatiu, conform cerintei proiec
 
 Display-ul este conectat prin conectorul 503480-2400 si este controlat prin:
 
-SCK
-MOSI
-EPD_CS
-EPD_DC
-EPD_RST
-EPD_BUSY
+SCK, MOSI, EPD_CS,EPD_DC, EPD_RST, EPD_BUSY
 
 Pe langa partea de comunicatie, display-ul are si un etaj separat de alimentare / drive realizat cu:
 
-MOSFET-uri
-diode Schottky
-inductor
-condensatori
+MOSFET-uri,diode Schottky, inductor, condensatori
 
 Acest etaj este necesar pentru generarea tensiunilor speciale cerute de panoul e-paper.
 
@@ -155,7 +163,7 @@ Acest etaj este necesar pentru generarea tensiunilor speciale cerute de panoul e
 IMU-ul folosit este BMA421 (IC3) si comunica prin I2C. Are doua semnale de interrupt:
 
 IMU_INT1
-IMU_INT2
+,IMU_INT2
 
 Aceste semnale sunt conectate la MCU pentru detectarea rapida a evenimentelor de miscare si pentru trezirea sistemului din moduri low-power.
 
@@ -172,17 +180,20 @@ Conectorul J4 = KH-TYPE-C-16P este folosit pentru alimentare si optional pentru 
 Antena este ANT1 = 2450AT18B100E si este conectata la pinul RF al nRF52840 printr-o retea de matching. Antena este pusa la marginea placii, iar sub ea am lasat zona fara plan de masa si fara trasee, conform regulilor de proiectare RF.
 
 
-PCB si layout
+## PCB si layout
 Board specifications
-dimensiunea placii: 46 mm x 35 mm
-grosimea PCB-ului: 1 mm
-componentele sunt plasate pe TOP
-rutarea este facuta pe Top si Bottom
-exista poligoane de GND pe Top si Bottom
+- dimensiunea placii: 46 mm x 35 mm
+- grosimea PCB-ului: 1 mm
+- componentele sunt plasate pe TOP
+- rutarea este facuta pe Top si Bottom
+- exista poligoane de GND pe Top si Bottom
+  
 Routing rules
-traseele de semnal au fost rutate cu minimum 0.15 mm
-traseele de putere au fost rutate cu 0.3 mm acolo unde spatiul a permis
-in zonele foarte dense, unele segmente scurte au trebuit ingustate local
+
+- traseele de semnal au fost rutate cu minimum 0.15 mm
+- traseele de putere au fost rutate cu 0.3 mm acolo unde spatiul a permis
+- in zonele foarte dense, unele segmente scurte au trebuit ingustate local
+  
 Ground planes
 
 Au fost folosite planuri de masa pe placa, iar in zonele importante a fost aplicat si via stitching, mai ales in jurul zonei RF si al microcontroller-ului.
@@ -191,11 +202,27 @@ Antena si keepout
 
 Antena este pusa la marginea PCB-ului, iar sub ea:
 
-nu exista plan de masa
-nu exista trasee
-nu exista turnare de cupru
+- nu exista plan de masa
+- nu exista trasee
+- nu exista turnare de cupru
 
 Acest lucru a fost facut pentru a nu afecta performanta RF.
+Pe parcursul proiectarii au aparut mai multe probleme, mai ales in zonele cu densitate mare de componente:
 
+- zona din jurul nRF52840 a fost dificil de rutat
+- integrarea bateriei, display-ului si shaker-ului in acelasi volum a fost dificila
 
+## Integrare mecanica si 3D
 
+In modelul 3D au fost incluse:
+- PCB-ul
+- carcasa
+- bateria
+- display-ul
+- shaker-ul
+
+Au fost verificate:
+- alinierea USB-C
+- alinierea butoanelor
+- pozitia display-ului fata de carcasa
+- spatiul pentru baterie si shaker
