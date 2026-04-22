@@ -106,7 +106,7 @@ BOM-ul complet generat automat se gaseste in folderul Manufacturing.
 | ANT | RF | Antena 2.4 GHz | transmisie BLE |
 | VBUS | VBUS | USB-C | alimentare 5V |
 
-Pinii au fost alesi astfel incat sa existe o separare clara intre magistralele de comunicatie si semnalele de control. Display-ul e-paper foloseste SPI pentru transferul de date, iar semnalele EPD_CS, EPD_DC, EPD_RST si EPD_BUSY sunt tinute separat pentru controlul corect al panoului. IMU-ul, fuel gauge-ul, charger-ul, convertorul DC/DC si driverul haptic folosesc aceeasi magistrala I2C, ceea ce reduce numarul de pini ocupati. Butoanele sunt conectate pe GPIO-uri dedicate pentru citire simpla, iar liniile SWDIO, SWDCLK si SWO sunt folosite pentru programare si debugging.
+Am ales pinii in asa fel incat sa separ cat mai clar liniile de comunicatie de semnalele de control. Display-ul foloseste SPI pentru transferul de date, iar semnalele EPD_CS, EPD_DC, EPD_RST si EPD_BUSY sunt separate pentru controlul corect al panoului. IMU-ul, fuel gauge-ul, charger-ul, convertorul DC/DC si driverul haptic folosesc aceeasi magistrala I2C, ceea ce reduce numarul de pini ocupati. Butoanele sunt puse pe GPIO-uri dedicate, iar liniile SWDIO, SWDCLK si SWO sunt folosite pentru programare si debugging.
 
 ## Descriere hardware
 1. Microcontroller
@@ -124,27 +124,27 @@ Cristalul de 32MHz este folosit pentru functionarea principala a MCU-ului si pen
 
 2. Alimentare si management energetic
 
-Arhitectura de alimentare este impartita in trei blocuri principale:
+Partea de alimentare am impartit-o in trei blocuri principale:
 
-Charger - BQ25180YBGR
+BQ25180YBGR
 
 IC1 = BQ25180YBGR se ocupa de incarcarea bateriei Li-Po din USB-C. Intrarea de 5V vine din VBUS, iar iesirea merge spre baterie. Circuitul are si semnal de interrupt catre MCU pentru monitorizarea starii de incarcare.
 
-Fuel Gauge - MAX17048
+MAX17048
 
 U3 = MAX17048G+T10 monitorizeaza tensiunea bateriei si comunica prin I2C cu nRF52840. Are si semnal de alerta catre MCU pentru praguri critice sau schimbari de stare.
 
-DC/DC - RT6160AWSC
+RT6160AWSC
 
 IC9 = RT6160AWSC este convertorul buck-boost care genereaza alimentarea stabila 3V3 / VREG pentru sistem. Acesta este necesar deoarece tensiunea bateriei variaza in functie de starea de incarcare, iar sistemul are nevoie de o alimentare stabila.
 
 3. Bateria
 
-Bateria folosita este de tip LP502030, 3.7V, aproximativ 250mAh. In proiect, bateria nu este conectata prin conector JST, ci direct la doua test pad-uri:
+Am folosit o baterie de tip LP502030, 3.7V, aproximativ 250mAh. In proiect, bateria nu este conectata prin conector JST, ci direct la doua test pad-uri:
 
 TP_VBAT, TP_BAT_GND
 
-Aceasta solutie a fost aleasa pentru economie de spatiu, conform cerintei proiectului.
+Am ales varianta asta ca sa economisesc spatiu si pentru ca asta era si cerinta proiectului.
 
 4. Display e-paper
 
@@ -152,11 +152,6 @@ Display-ul este conectat prin conectorul 503480-2400 si este controlat prin:
 
 SCK, MOSI, EPD_CS,EPD_DC, EPD_RST, EPD_BUSY
 
-Pe langa partea de comunicatie, display-ul are si un etaj separat de alimentare / drive realizat cu:
-
-MOSFET-uri,diode Schottky, inductor, condensatori
-
-Acest etaj este necesar pentru generarea tensiunilor speciale cerute de panoul e-paper.
 
 5. IMU
 
@@ -196,7 +191,7 @@ Routing rules
   
 Ground planes
 
-Au fost folosite planuri de masa pe placa, iar in zonele importante a fost aplicat si via stitching, mai ales in jurul zonei RF si al microcontroller-ului.
+Am folosit planuri de masa pe placa, iar in zonele importante am pus si via stitching, mai ales in jurul zonei RF si al microcontroller-ului.
 
 Antena si keepout
 
